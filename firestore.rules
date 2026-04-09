@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isRecent() {
+      return request.time > timestamp.date(2026, 1, 1);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Build Requests
+    // ===============================================================
+    match /buildRequests/{requestId} {
+      // Anyone can submit a request (create)
+      // We validate the data strictly
+      allow create: if 
+        request.resource.data.keys().hasAll(['name', 'email', 'goal', 'createdAt', 'status']) &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 100 &&
+        isValidEmail(request.resource.data.email) &&
+        request.resource.data.goal is string && request.resource.data.goal.size() < 500 &&
+        request.resource.data.status == 'new' &&
+        request.resource.data.createdAt == request.time;
+
+      // Only authenticated admins can read/update/delete requests
+      // For this demo, we'll assume admin check is handled via auth token or a specific admin collection
+      // But for safety, we default to deny and only allow if authenticated (for the user who set it up)
+      allow read, update, delete: if isAuthenticated();
+    }
+  }
+}

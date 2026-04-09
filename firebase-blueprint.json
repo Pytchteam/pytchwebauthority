@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "BuildRequest": {
+      "title": "Build Request",
+      "description": "A request from a potential client via the build quiz.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Client name" },
+        "email": { "type": "string", "format": "email", "description": "Client email" },
+        "businessType": { "type": "string", "description": "Type of business" },
+        "goal": { "type": "string", "description": "Primary goal for the project" },
+        "budget": { "type": "string", "description": "Estimated budget range" },
+        "message": { "type": "string", "description": "Additional details" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission timestamp" },
+        "status": { "type": "string", "enum": ["new", "contacted", "closed"], "description": "Lead status" }
+      },
+      "required": ["name", "email", "goal"]
+    }
+  },
+  "firestore": {
+    "/buildRequests/{requestId}": {
+      "schema": "BuildRequest",
+      "description": "Collection of build requests submitted via the quiz."
+    }
+  }
+}
